@@ -93,6 +93,7 @@ reg `INST IF_ir;
 
 // ID registers
 reg RegDst, Branch, MemRead, MemWrite, ALUSrc, RegWrite, Bad, ID_MemRead, ID_MemWrite, ID_Bad;
+reg JUMP //forces rs for jr
 reg `ALUOP ALUOp, ID_ALUOp;
 reg `WORD s, t, imm, ID_s, ID_t, ID_src;
 reg `REG ID_rd;
@@ -156,9 +157,11 @@ always @(posedge clk) if (running && !ID_Bad) begin
     ID_Bad <= 0;
   end else begin
     // Brute force decode of instruction
+	Jump = 0; //default value 
     case (squashed `OP)
       `RTYPE: begin
         case (squashed `FUNCT)
+		  `JR:     begin RegDst=0; Branch=0; MemRead=0; ALUOp=`ALUOR; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; Jump=1; end // decode line 
           `ADDU:   begin RegDst=1; Branch=0; MemRead=0; ALUOp=`ALUADD; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; end
           `SUBU:   begin RegDst=1; Branch=0; MemRead=0; ALUOp=`ALUSUB; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; end
 	  `AND:    begin RegDst=1; Branch=0; MemRead=0; ALUOp=`ALUAND; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; end
@@ -183,9 +186,8 @@ always @(posedge clk) if (running && !ID_Bad) begin
     s = (canfwds ? fwds : r[squashed `RS]);
     t = (canfwdt ? fwdt : r[squashed `RT]);
     imm = {{16{squashed[15]}}, squashed `IMM};
-    target <= IF_pc + {imm[29:0], 2'b00};
-
-    squash <= (Branch && (s == t));
+    target <= (Jump ? s: (IF_pc + {imm[29:0], 2'b00})); // new path rs goes to PC
+    squash <= (Jump || (Branch && (s == t)));
     ID_s <= s;
     ID_t <= t;
     ID_src <= (ALUSrc ? imm : t);
@@ -254,6 +256,7 @@ always @(posedge clk) if (running) begin
   case (IF_ir `OP)
     `RTYPE: begin
       case (IF_ir `FUNCT)
+		`JR: 	 $display("IF  JR $%1d", IF_ir `RS); 
         `ADDU:   $display("IF  addu $%1d,$%1d,$%1d", IF_ir `RD, IF_ir `RS, IF_ir `RT);
         `SUBU:   $display("IF  subu $%1d,$%1d,$%1d", IF_ir `RD, IF_ir `RS, IF_ir `RT);
 	`AND:    $display("IF  and $%1d,$%1d,$%1d", IF_ir `RD, IF_ir `RS, IF_ir `RT);
