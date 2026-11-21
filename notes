@@ -69,6 +69,9 @@ reg `WORD r `REGCNT;
 initial begin
     r[1] = 22; r[2] = 1; r[3] = 42;
     r[4] = 601;	r[5] = 11811; r[6] = -1;
+    //bne testing registers
+    r[7] = 1; r[8] = 2; r[9] = 1; r[10] = 0; 
+    r[11] = 0; r[12] = 0;
     `RPACK(m[0], 2, 3, 1, 0, `ADDU)
     `RPACK(m[1], 2, 3, 1, 0, `SLTU)
     `RPACK(m[2], 3, 5, 1, 0, `AND)
@@ -84,7 +87,17 @@ initial begin
     `IPACK(m[12], `LW, 2, 1, 1023)
     `IPACK(m[13], `SW, 0, 2, 1024)
     `IPACK(m[14], `ADDIU, 6, 6, 1)
-    m[15] = 0;
+    
+    //bne test 1: bne taken
+    `IPACK(m[15], `BNE, 7, 8, 1) // $7 != $8, take branch
+    `IPACK(m[16], `ADDIU, 0, 11, 99) // should be skipped
+    `IPACK(m[17], `ADDIU, 0, 10, 199) // expected result
+
+    //bne test 2: bne not taken
+    `IPACK(m[18], `BNE, 7, 9, 1) // $7 == $9, don't branch
+    `IPACK(m[19], `ADDIU, 0, 12, 299) // should execute
+
+    m[20] = 0;
     m[256] = 22;
 end
 
