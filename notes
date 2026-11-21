@@ -269,6 +269,7 @@ always @(posedge clk) if (running) begin
       endcase
     end
     `BEQ:    $display("IF  beq $%1d,$%1d,offset=$%1d", IF_ir `RT, IF_ir `RS, IF_ir `IMM);
+    `BNE:    $display("IF  bne $%1d,$%1d,offset=$%1d", IF_ir `RT, IF_ir `RS, IF_ir `IMM); //Add bne trace
     `ADDIU:  $display("IF  addiu $%1d,$%1d,$%1d", IF_ir `RT, IF_ir `RS, IF_ir `IMM);
     `SLTIU:  $display("IF  sltiu $%1d,$%1d,$%1d", IF_ir `RT, IF_ir `RS, IF_ir `IMM);
     `ANDI:   $display("IF  andi $%1d,$%1d,$%1d", IF_ir `RT, IF_ir `RS, IF_ir `IMM);
