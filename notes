@@ -93,7 +93,7 @@ reg `INST IF_ir;
 
 // ID registers
 reg RegDst, Branch, MemRead, MemWrite, ALUSrc, RegWrite, Bad, ID_MemRead, ID_MemWrite, ID_Bad;
-reg JUMP //forces rs for jr
+reg Jump; //forces rs for jr
 reg `ALUOP ALUOp, ID_ALUOp;
 reg `WORD s, t, imm, ID_s, ID_t, ID_src;
 reg `REG ID_rd;
@@ -161,7 +161,7 @@ always @(posedge clk) if (running && !ID_Bad) begin
     case (squashed `OP)
       `RTYPE: begin
         case (squashed `FUNCT)
-		  `JR:     begin RegDst=0; Branch=0; MemRead=0; ALUOp=`ALUOR; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; Jump=1; end // decode line 
+		  `JR:     begin RegDst=0; Branch=0; MemRead=0; ALUOp=`ALUOR; MemWrite=0; ALUSrc=0; RegWrite=0; Bad=0; Jump=1; end // decode line 
           `ADDU:   begin RegDst=1; Branch=0; MemRead=0; ALUOp=`ALUADD; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; end
           `SUBU:   begin RegDst=1; Branch=0; MemRead=0; ALUOp=`ALUSUB; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; end
 	  `AND:    begin RegDst=1; Branch=0; MemRead=0; ALUOp=`ALUAND; MemWrite=0; ALUSrc=0; RegWrite=1; Bad=0; end
