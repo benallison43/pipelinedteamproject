@@ -87,7 +87,7 @@ initial begin
     `IPACK(m[12], `LW, 2, 1, 1023)
     `IPACK(m[13], `SW, 0, 2, 1024)
     `IPACK(m[14], `ADDIU, 6, 6, 1)
-    m[15] = 0;
+    m[18] = 0;
     m[256] = 22;
 end
 
