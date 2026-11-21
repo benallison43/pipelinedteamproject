@@ -92,7 +92,7 @@ reg `ADDR IF_pc;
 reg `INST IF_ir;
 
 // ID registers
-reg RegDst, Branch, MemRead, MemWrite, ALUSrc, RegWrite, Bad, ID_MemRead, ID_MemWrite, ID_Bad;
+reg RegDst, Branch, Bne, MemRead, MemWrite, ALUSrc, RegWrite, Bad, ID_MemRead, ID_MemWrite, ID_Bad; //Add control variable Bne
 reg JUMP //forces rs for jr
 reg `ALUOP ALUOp, ID_ALUOp;
 reg `WORD s, t, imm, ID_s, ID_t, ID_src;
@@ -158,6 +158,7 @@ always @(posedge clk) if (running && !ID_Bad) begin
   end else begin
     // Brute force decode of instruction
 	Jump = 0; //default value 
+  Bne = 0; //default value
     case (squashed `OP)
       `RTYPE: begin
         case (squashed `FUNCT)
@@ -172,6 +173,7 @@ always @(posedge clk) if (running && !ID_Bad) begin
         endcase
       end
       `BEQ:    begin RegDst=0; Branch=1; MemRead=0; ALUOp=`ALUSUB; MemWrite=0; ALUSrc=0; RegWrite=0; Bad=0; end
+      `BNE:    begin RegDst=0; Branch=1; Bne=1; MemRead=0; ALUOp=`ALUSUB; MemWrite=0; ALUSrc=0; RegWrite=0; Bad=0; end //decode line
       `ADDIU:  begin RegDst=0; Branch=0; MemRead=0; ALUOp=`ALUADD; MemWrite=0; ALUSrc=1; RegWrite=1; Bad=0; end
       `SLTIU:  begin RegDst=0; Branch=0; MemRead=0; ALUOp=`ALUSLT; MemWrite=0; ALUSrc=1; RegWrite=1; Bad=0; end
       `ANDI:   begin RegDst=0; Branch=0; MemRead=0; ALUOp=`ALUAND; MemWrite=0; ALUSrc=1; RegWrite=1; Bad=0; end
@@ -187,7 +189,7 @@ always @(posedge clk) if (running && !ID_Bad) begin
     t = (canfwdt ? fwdt : r[squashed `RT]);
     imm = {{16{squashed[15]}}, squashed `IMM};
     target <= (Jump ? s: (IF_pc + {imm[29:0], 2'b00})); // new path rs goes to PC
-    squash <= (Jump || (Branch && (s == t)));
+    squash <= (Jump || (Branch && ((!Bne && (s == t)) || (Bne && (s != t))))); //Add choice between equality and inequality using Bne
     ID_s <= s;
     ID_t <= t;
     ID_src <= (ALUSrc ? imm : t);
